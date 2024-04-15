@@ -5,16 +5,24 @@ import messageService from '../services/message.service';
 
 class SocketManager{
     initializeSocketIO(io: Server) {
-        const roomID = '65b61d7a8db4edc72edb9362';
-      
+        const staticRoomID = '65b61d7a8db4edc72edb9362';
+
         io.on('connection', (socket: Socket) => {
           console.log(`user ${socket.currentUser.id} connected`);
-      
-          socket.join(roomID);
-      
-          socket.on('chatMessage', async (message: string) => {
-            await messageService.addMessageToRoom(message, socket.currentUser.id, roomID)
-            io.to(roomID).emit('chatMessage', message);
+
+          // socket.on('chatMessage', async (message: string) => {
+          //   socket.join(staticRoomID);
+          //   await messageService.addMessageToRoom(message, socket.currentUser.id, staticRoomID)
+          //   io.to(staticRoomID).emit('chatMessage', message);
+          // });
+
+          socket.on('chatMessage', async (message: string, roomId: string) => {
+            await messageService.addMessageToRoom(message, socket.currentUser.id, staticRoomID)
+            io.to(roomId).emit('chatMessage', message);
+          });
+
+          socket.on('joinRoom', async (roomId: string) => {
+            socket.join(roomId);
           });
       
           socket.on('disconnect', () => {
